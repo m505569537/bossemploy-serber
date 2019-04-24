@@ -72,4 +72,45 @@ router.post('/login', function(req,res){
   })
 })
 
+router.post('/update', function (req,res){
+  //获取cookie中的userid
+  const userid = req.cookies.userid
+  if(!userid){
+    return res.send({code:1, msg:'请重新登陆'})
+  }
+  const user = req.body
+  UserModel.findByIdAndUpdate({_id:userid}, user, function (err,olduser){
+    if(!olduser) {
+      res.clearCookie('userid')
+      res.send({code:1, msg:'请重新登陆'})
+    } else {
+      const { username, _id, type } = olduser
+      const data = Object.assign({ username, _id, type }, user)
+      res.send({ code:0, data })
+    }
+  })
+})
+
+router.get('/user', function(req,res){
+  const userid = req.cookies.userid
+  if(!userid) {
+    return res.send({code:1, msg:'请先登录'})
+  }
+  UserModel.findOne({_id:userid},filter,function(err, user){
+    res.send({code:0, data: user})
+  })
+})
+
+router.get('/dashen', function (req,res) {
+  UserModel.find({type:'dashen'}, filter, function(err,dslist) {
+    res.send({code:0, data: dslist})
+  })
+})
+
+router.get('/laoban', function (req,res) {
+  UserModel.find({type:'laoban'}, filter, function(err,lblist) {
+    res.send({code:0, data: lblist})
+  })
+})
+
 module.exports = router;
