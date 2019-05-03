@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 const md5 = require('blueimp-md5')
-const UserModel = require('../db/models').UserModel
+const { UserModel, ChatModel } = require('../db/models')
 
 const filter = {password:0, __v:0}  //设置过滤，使回调返回的数据不包含过滤器中的属性
 
@@ -101,6 +101,7 @@ router.get('/user', function(req,res){
   })
 })
 
+//使用不传参的方式获取 大神/老板 列表
 router.get('/dashen', function (req,res) {
   UserModel.find({type:'dashen'}, filter, function(err,dslist) {
     res.send({code:0, data: dslist})
@@ -110,6 +111,35 @@ router.get('/dashen', function (req,res) {
 router.get('/laoban', function (req,res) {
   UserModel.find({type:'laoban'}, filter, function(err,lblist) {
     res.send({code:0, data: lblist})
+  })
+})
+
+//使用传参方式获取 大神/老板 列表
+//查询字符串传参，参数在query中
+router.get('/index', function (req,res) {
+  const { type } = req.query
+  const option = type==='dashen' ? ({type:'laoban'}):({type:'dashen'})
+  UserModel.find(option, filter, function(err,lblist) {
+    res.send({code:0, data: lblist})
+  })
+})
+
+//获取当前用户的聊天消息列表
+router.get('/msglist',function (req, res) {
+  //获取当前用户id
+  const userid = req.cookies.userid
+  //查询所有的用户
+  UserModel.find(function (err,userDocs) {
+    const users = {}
+    userDocs.forEach( doc => {
+      users[doc._id] = {
+        username:doc.username,
+        header: doc.header
+      }
+    })
+    ChatModel.find({'$or':[{from: userid}, {to: userid}]}, filter, function (err, chatMsgs) {
+      res.send({code:0, data: {users,chatMsgs}})
+    })
   })
 })
 
