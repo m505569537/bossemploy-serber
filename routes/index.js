@@ -35,7 +35,7 @@ router.get('/', function(req, res, next) {
 
 /* 卧槽！！！！！劳资终于知道怎么和后台进行数据交互了 */
 /* 注册路由，操作数据库，返回数据，其实也不是很难 */
-router.post('/register', function(req,res){
+router.post('/api/register', function(req,res){
   //获取请求数据
   const { username, password, type } = req.body;
   //处理
@@ -57,7 +57,7 @@ router.post('/register', function(req,res){
   })
 })
 
-router.post('/login', function(req,res){
+router.post('/api/login', function(req,res){
   const { username, password } = req.body
 
   UserModel.findOne({ username, password: md5(password) }, filter ,function (err, user){
@@ -72,7 +72,7 @@ router.post('/login', function(req,res){
   })
 })
 
-router.post('/update', function (req,res){
+router.post('/api/update', function (req,res){
   //获取cookie中的userid
   const userid = req.cookies.userid
   if(!userid){
@@ -91,7 +91,7 @@ router.post('/update', function (req,res){
   })
 })
 
-router.get('/user', function(req,res){
+router.get('/api/user', function(req,res){
   const userid = req.cookies.userid
   if(!userid) {
     return res.send({code:1, msg:'请先登录'})
@@ -102,13 +102,13 @@ router.get('/user', function(req,res){
 })
 
 //使用不传参的方式获取 大神/老板 列表
-router.get('/dashen', function (req,res) {
+router.get('/api/dashen', function (req,res) {
   UserModel.find({type:'dashen'}, filter, function(err,dslist) {
     res.send({code:0, data: dslist})
   })
 })
 
-router.get('/laoban', function (req,res) {
+router.get('/api/laoban', function (req,res) {
   UserModel.find({type:'laoban'}, filter, function(err,lblist) {
     res.send({code:0, data: lblist})
   })
@@ -116,7 +116,7 @@ router.get('/laoban', function (req,res) {
 
 //使用传参方式获取 大神/老板 列表
 //查询字符串传参，参数在query中
-router.get('/index', function (req,res) {
+router.get('/api/index', function (req,res) {
   const { type } = req.query
   const option = type==='dashen' ? ({type:'laoban'}):({type:'dashen'})
   UserModel.find(option, filter, function(err,lblist) {
@@ -125,7 +125,7 @@ router.get('/index', function (req,res) {
 })
 
 //获取当前用户的聊天消息列表
-router.get('/msglist',function (req, res) {
+router.get('/api/msglist',function (req, res) {
   //获取当前用户id
   const userid = req.cookies.userid
   //查询所有的用户
